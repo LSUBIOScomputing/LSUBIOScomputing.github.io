@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<title>D3 Demo</title>
+<meta charset="utf-8">
+
+	<div class="title">
+		<h1>Generating Normals from Uniforms</h1>
+	</div>
+	<div id="topbar" style="float:left">
+
+		  Number of Uniforms: <input type="text" name="n" id="n" size=4>
+		  Number of Replications: <input type="text" name="nrep" id="nrep" size=4>
+		  Number of Bins: <input type="text" name="numbins" id="numbins" size=4>
+	</div>
+	<div style="margin:10px 0px 5px">
+		<input type="button" value="Draw!" name="subbutton" onclick="draw()">
+	</div>
+	
+	
+	<div id="drawspace">
+	</div>
+<style>
+.bar rect {
+  fill: steelblue;
+  shape-rendering: crispEdges;
+}
+
+.bar text {
+  fill: #fff;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+</style>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://underscorejs.org/underscore-min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+<script>
+
+
+
+var margin = {top: 10, right: 30, bottom: 30, left: 30},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+	
+
+
+
+
+
+
+function draw(){
+
+	d3.select("svg").remove();
+	
+
+	var svg = d3.select("#drawspace").append("svg")
+		.attr("width", width+margin.left+margin.right)
+		.attr("height", height + margin.top + margin.bottom);
+		
+	d3.select('#topbar')
+		.call( function(){
+			n = parseFloat(document.getElementById("n").value);
+			nrep = parseFloat(document.getElementById("nrep").value);
+			numbins = parseFloat(document.getElementById("numbins").value);
+		
+
+									  
+
+			  
+			var values = [];
+			for(k=1; k <= nrep; k++){
+				var sum = 0;
+				for(j=1; j <= n; j++){
+					sum = sum + Math.random();
+				}
+				values.push(Math.sqrt(12/n)*(sum - n*0.5))
+			}
+			
+			var minbin = Math.min.apply(Math, values);
+			var maxbin = Math.max.apply(Math, values);
+			
+			
+			var x = d3.scale.linear()
+				.domain([0, (maxbin-minbin)])
+				.range([0, width]);
+
+			var x2 = d3.scale.linear()
+				.domain([minbin, maxbin])
+				.range([0, width]);
+
+
+									  
+			var xAxis = d3.svg.axis()
+				.scale(x2)
+				.orient("bottom");
+									  
+			// Draw the x-axis  
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + height + ")")
+				.call(xAxis);
+									  
+									  
+			var binsize = (maxbin-minbin)/numbins;
+			
+			histdata = new Array(numbins);
+			
+			for (var i = 0; i < numbins; i++) {
+					histdata[i] = { numfill: 0, xcount: i };
+
+				 for (var j = 0 ; j < nrep; j++){
+					if (values[j] < minbin + i*binsize && values[j] >= minbin + (i-1)*binsize) {
+						histdata[i].numfill += 1;
+					}
+				}
+			}
+		  
+
+			var scaley = d3.scale.linear()
+				.domain([0,d3.max(histdata, function(d) { return d.numfill; })])
+				.range([height, 0]);
+
+			var yAxis = d3.svg.axis()
+				.scale(scaley)
+				.orient("left")
+				.ticks(5);
+				
+			var bar = svg.selectAll(".bar")
+				.data(histdata)
+				.enter().append("g")
+				.attr("class", "bar")
+				.attr("transform", function(d) { return "translate(" + x2(d.xcount*binsize + minbin) + "," + scaley(d.numfill) + ")"; });
+				
+			bar.append("rect")
+				.attr("x", x(0.01))
+				.attr("width", x(binsize))
+				.attr("height", function(d) { return height- scaley(d.numfill); });
+
+	
+		})			  
+}
+
+</script>
