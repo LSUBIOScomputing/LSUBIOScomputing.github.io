@@ -41,19 +41,11 @@
 
 <script>
 
-
-
 var margin = {top: 10, right: 30, bottom: 30, left: 30},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
 	
-
-
-
-
-
-
 function draw(){
 
 	d3.select("svg").remove();
@@ -115,7 +107,7 @@ function draw(){
 					histdata[i] = { numfill: 0, xcount: i };
 
 				 for (var j = 0 ; j < nrep; j++){
-					if (values[j] < minbin + i*binsize && values[j] >= minbin + (i-1)*binsize) {
+					if (values[j] < minbin + (i+1)*binsize && values[j] >= minbin + i*binsize) {
 						histdata[i].numfill += 1;
 					}
 				}
@@ -133,10 +125,12 @@ function draw(){
 				
 			var bar = svg.selectAll(".bar")
 				.data(histdata)
-				.enter().append("g")
+				.enter()
+				.append("g")
 				.attr("class", "bar")
 				.attr("transform", function(d) { return "translate(" + x2(d.xcount*binsize + minbin) + "," + scaley(d.numfill) + ")"; });
-				
+		
+		
 			bar.append("rect")
 				.attr("x", x(0.01))
 				.attr("width", x(binsize))
